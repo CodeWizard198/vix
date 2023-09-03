@@ -20,7 +20,8 @@ type Server interface {
 }
 
 type HTTPServer struct {
-	route *router
+	route   *router
+	middles []Middleware
 }
 
 func NewVIX() *HTTPServer {
@@ -33,8 +34,13 @@ func (h *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Resp: w,
 		Req:  r,
 	}
+	// 从后往前构建责任链
+	root := h.serve
+	for i := len(h.middles) - 1; i >= 0; i-- {
+		root = h.middles[i](root)
+	}
 	// 查找路由树 执行命中的业务逻辑
-	h.serve(ctx)
+	root(ctx)
 }
 
 func (h *HTTPServer) serve(ctx *Context) {

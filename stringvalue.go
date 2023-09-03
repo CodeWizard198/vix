@@ -2,6 +2,8 @@ package vix
 
 import "strconv"
 
+// StringValue 对结果的封装
+// 支持链式的调用可以根据实际的情况来转化为不同的类型
 type StringValue struct {
 	Value string
 	Err   error

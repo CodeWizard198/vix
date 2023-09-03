@@ -8,6 +8,9 @@ import (
 	"net/url"
 )
 
+// Context 此context不是线程安全的
+// 因为一个context应该是对应着给一个goroutine使用
+// 不应该多个goroutine使用同一个context
 type Context struct {
 	// Req 请求request
 	Req *http.Request
