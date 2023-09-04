@@ -18,7 +18,8 @@ type Context struct {
 	Resp http.ResponseWriter
 	// PathParam 路径参数
 	// "/shop/:id" PathParam[id]
-	PathParam map[string]string
+	PathParam    map[string]string
+	ResponseCode int
 	// 请求参数缓存
 	paramCache url.Values
 }
@@ -100,8 +101,14 @@ func (c *Context) GetMoreParamValues(key ...string) (map[string]StringValue, err
 	return paramMap, nil
 }
 
+// SetCookie 设置cookie
+func (c *Context) SetCookie() {
+
+}
+
 // JSON 相应json类型的数据
 func (c *Context) JSON(code int, response any) {
+	c.ResponseCode = code
 	data, err := json.Marshal(response)
 	if err != nil {
 		c.errResponse()
@@ -113,12 +120,14 @@ func (c *Context) JSON(code int, response any) {
 
 // STRING 响应string数据
 func (c *Context) STRING(code int, response string) {
+	c.ResponseCode = code
 	c.setHeaderSTRING(code, response)
 	_, _ = c.Resp.Write([]byte(response))
 }
 
 // BYTE 响应[]byte数据
 func (c *Context) BYTE(code int, response []byte) {
+	c.ResponseCode = code
 	c.setHeaderBYTE(code, response)
 	_, _ = c.Resp.Write(response)
 }

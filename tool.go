@@ -22,6 +22,35 @@ func checkPath(method, path string) {
 	}
 }
 
+func GetIP(req *http.Request) string {
+	var remoteAddr string
+	remoteAddr = req.RemoteAddr
+	if remoteAddr != "" {
+		return remoteAddr
+	}
+
+	remoteAddr = req.Header.Get("ipv4")
+	if remoteAddr != "" {
+		return remoteAddr
+	}
+
+	remoteAddr = req.Header.Get("XForwardedFor")
+	if remoteAddr != "" {
+		return remoteAddr
+	}
+
+	remoteAddr = req.Header.Get("X-Forwarded-For")
+	if remoteAddr != "" {
+		return remoteAddr
+	}
+
+	remoteAddr = req.Header.Get("X-Real-Ip")
+	if remoteAddr != "" {
+		return remoteAddr
+	}
+	return "127.0.0.1"
+}
+
 func (c *Context) setHeaderJSON(code int, data []byte) {
 	c.Resp.WriteHeader(code)
 	c.Resp.Header().Set("Content-Type", "application/json")

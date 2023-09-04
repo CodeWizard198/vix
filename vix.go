@@ -8,6 +8,9 @@ import (
 // HandleFunc 处理方法
 type HandleFunc func(ctx *Context)
 
+// HTTPServerOption option模式
+type HTTPServerOption func(server *HTTPServer)
+
 var _ Server = &HTTPServer{}
 
 // Server 抽象的Server服务器
@@ -24,9 +27,26 @@ type HTTPServer struct {
 	middles []Middleware
 }
 
-func NewVIX() *HTTPServer {
-	return &HTTPServer{route: newRouter()}
+func NewVIX(options ...HTTPServerOption) *HTTPServer {
+	server := &HTTPServer{route: newRouter()}
+	l := buildLogging()
+	logMiddle := l.build()
+	options = append(options, ServerWithMiddleware(logMiddle))
+	for _, opt := range options {
+		opt(server)
+	}
+	return server
 }
+
+func ServerWithMiddleware(middles ...Middleware) HTTPServerOption {
+	return func(server *HTTPServer) {
+		server.middles = middles
+	}
+}
+
+//func(h *HTTPServer) AddServerMiddleware(middleware Middleware){
+//	h.middles = append(h.middles, middleware)
+//}
 
 // ServeHTTP 处理HTTP请求的入口
 func (h *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +66,7 @@ func (h *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h *HTTPServer) serve(ctx *Context) {
 	success, match := h.route.checkRouter(ctx.Req.Method, ctx.Req.URL.Path)
 	if !success || match == nil {
-		ctx.Resp.WriteHeader(http.StatusNotFound)
+		ctx.STRING(http.StatusNotFound, "")
 		return
 	}
 	ctx.PathParam = match.param

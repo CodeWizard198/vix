@@ -2,6 +2,7 @@ package vix
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 )
 
@@ -14,10 +15,10 @@ type RegisterForm struct {
 func TestServer(t *testing.T) {
 	vix := NewVIX()
 	vix.GET("/user", func(ctx *Context) {
-		_, _ = ctx.Resp.Write([]byte("Hello VIX"))
+		ctx.STRING(http.StatusOK, "Hello VIX")
 	})
 	vix.GET("/home/*", func(ctx *Context) {
-		_, _ = ctx.Resp.Write([]byte("通配符匹配成功"))
+		ctx.STRING(http.StatusOK, "通配符匹配成功")
 	})
 	vix.GET("/login/:user/:pass", func(ctx *Context) {
 		_, _ = ctx.Resp.Write([]byte(fmt.Sprintf("username: %s, password: %s", ctx.PathParam["user"], ctx.PathParam["pass"])))
