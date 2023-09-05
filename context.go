@@ -116,7 +116,7 @@ func (c *Context) JSON(code int, response any) {
 		c.ResponseStatusCode = http.StatusNotFound
 		return
 	}
-	c.setHeaderJSON(code, data)
+	c.setHeaderJSON(data)
 	c.ResponseData = data
 	c.ResponseStatusCode = code
 }
@@ -124,13 +124,13 @@ func (c *Context) JSON(code int, response any) {
 // STRING 响应string数据
 func (c *Context) STRING(code int, response string) {
 	c.ResponseStatusCode = code
-	c.setHeaderSTRING(code, response)
+	c.setHeaderSTRING(response)
 	c.ResponseData = []byte(response)
 }
 
 // BYTE 响应[]byte数据
 func (c *Context) BYTE(code int, response []byte) {
 	c.ResponseStatusCode = code
-	c.setHeaderBYTE(code, response)
+	c.setHeaderBYTE(response)
 	c.ResponseData = response
 }

@@ -21,10 +21,10 @@ func TestServer(t *testing.T) {
 		ctx.STRING(http.StatusOK, "通配符匹配成功")
 	})
 	vix.GET("/login/:user/:pass", func(ctx *Context) {
-		_, _ = ctx.Resp.Write([]byte(fmt.Sprintf("username: %s, password: %s", ctx.PathParam["user"], ctx.PathParam["pass"])))
+		ctx.BYTE(http.StatusOK, []byte(fmt.Sprintf("username: %s, password: %s", ctx.PathParam["user"], ctx.PathParam["pass"])))
 	})
 	vix.GET("/shop/@(^[0-9]+$)", func(ctx *Context) {
-		_, _ = ctx.Resp.Write([]byte("正则匹配成功"))
+		ctx.STRING(http.StatusOK, "正则匹配成功")
 	})
 	vix.POST("/register", func(ctx *Context) {
 		form := &RegisterForm{}

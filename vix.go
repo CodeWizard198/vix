@@ -85,11 +85,13 @@ func (h *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // 刷新响应信息缓存
 func (h *HTTPServer) flushResponseData(ctx *Context) {
-	if ctx.ResponseStatusCode != 0 {
-		ctx.Resp.WriteHeader(ctx.ResponseStatusCode)
+	if ctx.ResponseStatusCode == 0 {
+		ctx.ResponseStatusCode = http.StatusNotFound
 	}
+	ctx.Resp.WriteHeader(ctx.ResponseStatusCode)
 	length, err := ctx.Resp.Write(ctx.ResponseData)
 	if err != nil || len(ctx.ResponseData) != length {
+		fmt.Println("写入错误")
 		h.logF("写入数据错误%v\n", err)
 	}
 }

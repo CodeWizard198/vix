@@ -51,18 +51,15 @@ func GetIP(req *http.Request) string {
 	return "127.0.0.1"
 }
 
-func (c *Context) setHeaderJSON(code int, data []byte) {
-	c.Resp.WriteHeader(code)
+func (c *Context) setHeaderJSON(data []byte) {
 	c.Resp.Header().Set("Content-Type", "application/json")
 	c.Resp.Header().Set("Content-Length", strconv.Itoa(len(data)))
 }
 
-func (c *Context) setHeaderSTRING(code int, data string) {
-	c.Resp.WriteHeader(code)
+func (c *Context) setHeaderSTRING(data string) {
 	c.Resp.Header().Set("Content-Length", strconv.Itoa(len(data)))
 }
 
-func (c *Context) setHeaderBYTE(code int, data []byte) {
-	c.Resp.WriteHeader(code)
+func (c *Context) setHeaderBYTE(data []byte) {
 	c.Resp.Header().Set("Content-Length", strconv.Itoa(len(data)))
 }
