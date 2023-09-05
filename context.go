@@ -18,8 +18,9 @@ type Context struct {
 	Resp http.ResponseWriter
 	// PathParam 路径参数
 	// "/shop/:id" PathParam[id]
-	PathParam    map[string]string
-	ResponseCode int
+	PathParam          map[string]string
+	ResponseData       []byte
+	ResponseStatusCode int
 	// 请求参数缓存
 	paramCache url.Values
 }
@@ -108,26 +109,28 @@ func (c *Context) SetCookie() {
 
 // JSON 相应json类型的数据
 func (c *Context) JSON(code int, response any) {
-	c.ResponseCode = code
+	c.ResponseStatusCode = code
 	data, err := json.Marshal(response)
 	if err != nil {
-		c.errResponse()
+		c.ResponseData = []byte("")
+		c.ResponseStatusCode = http.StatusNotFound
 		return
 	}
 	c.setHeaderJSON(code, data)
-	_, _ = c.Resp.Write(data)
+	c.ResponseData = data
+	c.ResponseStatusCode = code
 }
 
 // STRING 响应string数据
 func (c *Context) STRING(code int, response string) {
-	c.ResponseCode = code
+	c.ResponseStatusCode = code
 	c.setHeaderSTRING(code, response)
-	_, _ = c.Resp.Write([]byte(response))
+	c.ResponseData = []byte(response)
 }
 
 // BYTE 响应[]byte数据
 func (c *Context) BYTE(code int, response []byte) {
-	c.ResponseCode = code
+	c.ResponseStatusCode = code
 	c.setHeaderBYTE(code, response)
-	_, _ = c.Resp.Write(response)
+	c.ResponseData = response
 }

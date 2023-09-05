@@ -1,6 +1,7 @@
 package vix
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 )
@@ -25,10 +26,16 @@ type Server interface {
 type HTTPServer struct {
 	route   *router
 	middles []Middleware
+	logF    func(message string, args ...any)
 }
 
 func NewVIX(options ...HTTPServerOption) *HTTPServer {
-	server := &HTTPServer{route: newRouter()}
+	server := &HTTPServer{
+		route: newRouter(),
+		logF: func(message string, args ...any) {
+			fmt.Printf(message, args...)
+		},
+	}
 	l := buildLogging()
 	logMiddle := l.build()
 	options = append(options, ServerWithMiddleware(logMiddle))
@@ -38,6 +45,7 @@ func NewVIX(options ...HTTPServerOption) *HTTPServer {
 	return server
 }
 
+// ServerWithMiddleware 创建HTTPServerOption，创建中间件列表
 func ServerWithMiddleware(middles ...Middleware) HTTPServerOption {
 	return func(server *HTTPServer) {
 		server.middles = middles
@@ -59,14 +67,37 @@ func (h *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for i := len(h.middles) - 1; i >= 0; i-- {
 		root = h.middles[i](root)
 	}
+
+	var flush Middleware = func(next HandleFunc) HandleFunc {
+		return func(ctx *Context) {
+			next(ctx)
+			h.flushResponseData(ctx)
+		}
+	}
+
+	// 使用flush中间件
+	// 此时的flush中间件会位于中间件列表的最后
+	root = flush(root)
+
 	// 查找路由树 执行命中的业务逻辑
 	root(ctx)
+}
+
+// 刷新响应信息缓存
+func (h *HTTPServer) flushResponseData(ctx *Context) {
+	if ctx.ResponseStatusCode != 0 {
+		ctx.Resp.WriteHeader(ctx.ResponseStatusCode)
+	}
+	length, err := ctx.Resp.Write(ctx.ResponseData)
+	if err != nil || len(ctx.ResponseData) != length {
+		h.logF("写入数据错误%v\n", err)
+	}
 }
 
 func (h *HTTPServer) serve(ctx *Context) {
 	success, match := h.route.checkRouter(ctx.Req.Method, ctx.Req.URL.Path)
 	if !success || match == nil {
-		ctx.STRING(http.StatusNotFound, "")
+		ctx.ResponseStatusCode = http.StatusInternalServerError
 		return
 	}
 	ctx.PathParam = match.param

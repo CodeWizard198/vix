@@ -66,8 +66,3 @@ func (c *Context) setHeaderBYTE(code int, data []byte) {
 	c.Resp.WriteHeader(code)
 	c.Resp.Header().Set("Content-Length", strconv.Itoa(len(data)))
 }
-
-func (c *Context) errResponse() {
-	c.Resp.WriteHeader(http.StatusInternalServerError)
-	_, _ = c.Resp.Write([]byte("响应失败"))
-}

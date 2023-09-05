@@ -26,7 +26,7 @@ func (m *logging) build() Middleware {
 					Method: ctx.Req.Method,
 					Path:   ctx.Req.URL.Path,
 					Times:  co,
-					Status: ctx.ResponseCode,
+					Status: ctx.ResponseStatusCode,
 				}
 				l.logging()
 			}(start)
