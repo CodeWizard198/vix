@@ -1,20 +1,21 @@
-package vix
+package logging
 
 import (
 	"fmt"
+	"github.com/CodeWizard198/vix"
 	"time"
 )
 
-type logging struct {
+type MiddlewareLogging struct {
 }
 
-func buildLogging() *logging {
-	return &logging{}
+func BuildLogging() *MiddlewareLogging {
+	return &MiddlewareLogging{}
 }
 
-func (m *logging) build() Middleware {
-	return func(next HandleFunc) HandleFunc {
-		return func(ctx *Context) {
+func (m *MiddlewareLogging) Build() vix.Middleware {
+	return func(next vix.HandleFunc) vix.HandleFunc {
+		return func(ctx *vix.Context) {
 
 			start := time.Now()
 
@@ -22,7 +23,7 @@ func (m *logging) build() Middleware {
 				cost := time.Since(start)
 				co := fmt.Sprintf("%v", cost)
 				l := logs{
-					IP:     GetIP(ctx.Req),
+					IP:     vix.GetIP(ctx.Req),
 					Method: ctx.Req.Method,
 					Path:   ctx.Req.URL.Path,
 					Times:  co,

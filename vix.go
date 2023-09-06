@@ -36,9 +36,6 @@ func NewVIX(options ...HTTPServerOption) *HTTPServer {
 			fmt.Printf(message, args...)
 		},
 	}
-	l := buildLogging()
-	logMiddle := l.build()
-	options = append(options, ServerWithMiddleware(logMiddle))
 	for _, opt := range options {
 		opt(server)
 	}
@@ -51,10 +48,6 @@ func ServerWithMiddleware(middles ...Middleware) HTTPServerOption {
 		server.middles = middles
 	}
 }
-
-//func(h *HTTPServer) AddServerMiddleware(middleware Middleware){
-//	h.middles = append(h.middles, middleware)
-//}
 
 // ServeHTTP 处理HTTP请求的入口
 func (h *HTTPServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -103,6 +96,7 @@ func (h *HTTPServer) serve(ctx *Context) {
 		return
 	}
 	ctx.PathParam = match.param
+	ctx.MatchRouter = match.pod.route
 	match.pod.handler(ctx)
 }
 

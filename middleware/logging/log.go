@@ -1,4 +1,4 @@
-package vix
+package logging
 
 import (
 	"fmt"

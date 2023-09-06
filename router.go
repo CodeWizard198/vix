@@ -23,7 +23,8 @@ type router struct {
 
 // node 路由树
 type node struct {
-	path string
+	route string
+	path  string
 	// 静态匹配node
 	children map[string]*node
 	// 通配符匹配node
@@ -53,6 +54,7 @@ func (r *router) addRouter(method, path string, handleFunc HandleFunc) {
 	checkPath(method, path)
 	if path == ROD {
 		root.handler = handleFunc
+		root.route = ROD
 		return
 	}
 	path = strings.Trim(path, ROD)
@@ -68,6 +70,7 @@ func (r *router) addRouter(method, path string, handleFunc HandleFunc) {
 		panic(fmt.Sprintf("注册路由[%s-%s]失败,error:路由重复注册", method, path))
 	}
 	root.handler = handleFunc
+	root.route = path
 }
 
 // checkRouter 检查路由树中是否有指定路由
