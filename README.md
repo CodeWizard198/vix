@@ -14,7 +14,7 @@
 ``go get github.com/CodeWizard198/vix``
 ## 创建一个简单的HTTP服务器
 ```Go
-v := NewVIX()
+v := vix.NewVIX()
 
 v.GET("/list", func (ctx *vix.Context) {
     v.STRING(http.StatusOK, "Hello VIX")	
