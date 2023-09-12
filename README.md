@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+# vix
+Go lightweight web framework
+
+>>>>>>> 7d059dbe4d2d3a712ba7bf4ccf80bc7b11f07903
 # VIX
 一个基于go http的轻量级无侵入式的Go Web框架
 - 支持自定义中间件
@@ -14,7 +20,11 @@
 ``go get github.com/CodeWizard198/vix``
 ## 创建一个简单的HTTP服务器
 ```Go
+<<<<<<< HEAD
 v := vix.NewVIX()
+=======
+v := NewVIX()
+>>>>>>> 7d059dbe4d2d3a712ba7bf4ccf80bc7b11f07903
 
 v.GET("/list", func (ctx *vix.Context) {
     v.STRING(http.StatusOK, "Hello VIX")	
@@ -96,4 +106,8 @@ if err != nil {
 
 欢迎大家对框架升级建议，和问题的指出
 
+<<<<<<< HEAD
 联系我：2231764545@qq.com
+=======
+联系我：2231764545@qq.com
+>>>>>>> 7d059dbe4d2d3a712ba7bf4ccf80bc7b11f07903
