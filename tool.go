@@ -3,6 +3,7 @@ package vix
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 )
@@ -49,6 +50,17 @@ func GetIP(req *http.Request) string {
 		return remoteAddr
 	}
 	return "127.0.0.1"
+}
+
+func isFileExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, err
+	}
+	return false, err
 }
 
 func (c *Context) setHeaderJSON(data []byte) {

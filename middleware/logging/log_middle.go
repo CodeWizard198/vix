@@ -3,6 +3,7 @@ package logging
 import (
 	"fmt"
 	"github.com/CodeWizard198/vix"
+	"net/http"
 	"time"
 )
 
@@ -22,6 +23,9 @@ func (m *MiddlewareLogging) Build() vix.Middleware {
 			defer func(start time.Time) {
 				cost := time.Since(start)
 				co := fmt.Sprintf("%v", cost)
+				if ctx.ResponseStatusCode == 0 {
+					ctx.ResponseStatusCode = http.StatusInternalServerError
+				}
 				l := logs{
 					IP:     vix.GetIP(ctx.Req),
 					Method: ctx.Req.Method,

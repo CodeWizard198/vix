@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
 )
 
 // Context 此context不是线程安全的
@@ -22,6 +25,7 @@ type Context struct {
 	ResponseData       []byte
 	ResponseStatusCode int
 	MatchRouter        string
+	Form               url.Values
 	// 请求参数缓存
 	paramCache url.Values
 }
@@ -103,9 +107,107 @@ func (c *Context) GetMoreParamValues(key ...string) (map[string]StringValue, err
 	return paramMap, nil
 }
 
-// SetCookie 设置cookie
-func (c *Context) SetCookie() {
+// FormFile 获得传输的文件
+func (c *Context) FormFile(key string) (multipart.File, *multipart.FileHeader, error) {
+	return c.Req.FormFile(key)
+}
 
+// SaveFile 将文件保存到本地，采用断点续传的方式
+// 若文件夹中存在同名文件，默认为文件信息一样，无需再次保存
+// 默认文件名为传输时文件的文件名
+// 若需要改变可以传入name，此name需要包含文件类型
+func (c *Context) SaveFile(path string, file multipart.File, header *multipart.FileHeader, name ...string) error {
+	// 创建path中不存在的文件夹
+	err := os.MkdirAll(path, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	// 获取文件名 优先使用传入的文件名，若没有则使用原来的文件名
+	fileName := header.Filename
+	if len(name) != 0 {
+		fileName = name[0]
+	}
+	// 构建文件路径 path + 文件名
+	filePath := path + fileName
+	// 判断是否存在该文件
+	// 若不存在就创建一个
+	exists, err := isFileExists(filePath)
+	if !exists || err != nil {
+		_, err = os.Create(filePath)
+		if err != nil {
+			return err
+		}
+	}
+	// 获取创建/已有的文件信息
+	info, err := os.Stat(filePath)
+	if err != nil {
+		return err
+	}
+	// 如果大小一样且文件名也一样的，就认为是同一个文件
+	// 如果你不希望是这样，请配置不同的文件名
+	if info.Size() == header.Size {
+		return nil
+	}
+	fi, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	defer func(fi *os.File) {
+		err := fi.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(fi)
+	// 定位到文件没写入的部分
+	_, _ = file.Seek(info.Size(), 0)
+	// 每次写入1MB
+	data := make([]byte, 1024*1024)
+	for {
+		total, err := file.Read(data)
+		if err == io.EOF {
+			break
+		}
+		_, err = fi.Write(data[:total])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// SetCookie 设置cookie
+// expires：cookie的过期时间
+func (c *Context) SetCookie(name, value string, expires ...int) {
+	expireTime := 0
+	if len(expires) != 0 {
+		expireTime = expires[0]
+	}
+	http.SetCookie(c.Resp, &http.Cookie{
+		Name:   name,
+		Value:  value,
+		MaxAge: expireTime,
+	})
+}
+
+// GetCookie 获取请求中的cookie
+func (c *Context) GetCookie(name string) (string, error) {
+	cookie, err := c.Req.Cookie(name)
+	if err != nil {
+		return "", err
+	}
+	value, err := url.QueryUnescape(cookie.Value)
+	if err != nil {
+		return "", err
+	}
+	return value, nil
+}
+
+// DelCookie 删除请求中的cookie
+func (c *Context) DelCookie(name string) {
+	http.SetCookie(c.Resp, &http.Cookie{
+		Name:   name,
+		MaxAge: -1,
+	})
 }
 
 // JSON 相应json类型的数据

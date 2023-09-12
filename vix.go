@@ -95,6 +95,8 @@ func (h *HTTPServer) serve(ctx *Context) {
 		ctx.ResponseStatusCode = http.StatusInternalServerError
 		return
 	}
+	_ = ctx.Req.ParseForm()
+	ctx.Form = ctx.Req.Form
 	ctx.PathParam = match.param
 	ctx.MatchRouter = match.pod.route
 	match.pod.handler(ctx)

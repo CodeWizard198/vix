@@ -26,6 +26,10 @@ func TestMiddle(t *testing.T) {
 		//ctx.STRING(http.StatusOK, "Hello shop, you're successes")
 	})
 
+	v.GET("/info", func(ctx *vix.Context) {
+
+	})
+
 	err := v.Run(":8080")
 	if err != nil {
 		fmt.Println("server fail...")
